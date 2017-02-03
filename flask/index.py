@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, send_from_directory
 import sqlite3
 from flask_table import Table, Col
 import os.path
@@ -10,11 +10,13 @@ db_path = os.path.join(BASE_DIR, "fortune500.db")
 
 # Declare your table
 class ItemTable(Table):
+    classes = ['sortable']
     symbol = Col('Symbol')
     name = Col('Name')
     price = Col('Price')
     mkt_cap = Col('Market Cap')
     pe = Col('Price Earnings')
+
 
 # Get some objects
 class Item(object):
@@ -33,9 +35,15 @@ def test():
     cur = con.cursor()
     cur.execute('SELECT * FROM basic')
     x = cur.fetchall()
-    y = [Item(a, b, c, d, e) for a,b,c,d,e in x]
+    con.close()
+    y = [Item(a, b, c, d, e) for a, b, c, d, e in x]
     table = ItemTable(y)
-    return table.__html__()
+    test = """<html><head><script src="sorttable.js"></script></head>""" + table.__html__()
+    return test
+
+@app.route('/sorttable.js')
+def get_sorttable():
+    return send_from_directory(BASE_DIR, "sorttable.js")
 
 if __name__ == '__main__':
     app.run()
