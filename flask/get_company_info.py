@@ -23,6 +23,8 @@ def get_stock_info(stock_symbol):
     stock = Share(stock_symbol)
     _stock_info['price'] = stock.get_price()
     _stock_info['market_cap'] = stock.get_market_cap()
+    if _stock_info['market_cap'] is not None:
+        _stock_info['market_cap'] = _stock_info['market_cap'].replace("B", "")
     _stock_info['price_earnings'] = stock.get_price_earnings_ratio()
     return _stock_info
 
