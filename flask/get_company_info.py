@@ -29,6 +29,13 @@ def get_stock_info(stock_symbol):
     return _stock_info
 
 
+def get_stock_historical(stock_symbol, date_one, date_two):
+    stock_info = dict()
+    stock = Share(stock_symbol)
+    stock_hist = stock.get_historical(date_one, date_two)
+    return stock_hist
+
+
 def get_all_stocks():
     symbols = get_stock_symbols('Fortune500Companies.csv')
     stock_info = dict()
@@ -41,5 +48,33 @@ def get_all_stocks():
     conn.commit()
     conn.close()
 
-get_all_stocks()
 
+def save_stocks_to_file(open_file_name, save_file_name, start_date, end_date):
+    symbols = get_stock_symbols(open_file_name)
+    stock_info = dict()
+    with open(save_file_name, 'w') as save_file:
+        writer = csv.writer(save_file, delimiter=',', quotechar='|')
+        writer.writerow(["date", "name", "symbol", "high", "low", "close", "adj close", "volume", "high market cap",
+                         "low market cap", "close market cap", "adj close market cap"])
+        for symbol, name in symbols:
+            try:
+                stock_info = get_stock_historical(symbol, start_date, end_date)
+                for stock in stock_info:
+                    writer.writerow([stock['Date'],
+                                     name,
+                                     stock['Symbol'],
+                                     stock['High'],
+                                     stock['Low'],
+                                     stock['Close'],
+                                     stock['Adj_Close'],
+                                     stock['Volume'],
+                                     float(stock['High']) * float(stock['Volume']),
+                                     float(stock['Low']) * float(stock['Volume']),
+                                     float(stock['Close']) * float(stock['Volume']),
+                                     float(stock['Adj_Close']) * float(stock['Volume'])])
+            except Exception:
+                print("There was a problem but we ignored it")
+
+
+# get_all_stocks()
+save_stocks_to_file("Fortune500Companies.csv", "Stocks.csv", '2008-01-01', '2017-3-15')
